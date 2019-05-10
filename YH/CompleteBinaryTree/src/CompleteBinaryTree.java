@@ -1,11 +1,11 @@
 import java.util.LinkedList;
 
-public class BinaryTree {
+public class CompleteBinaryTree {
 
 	private BinaryTreeNode root;
 	private LinkedList<BinaryTreeNode> q;
 
-	public BinaryTree() {
+	public CompleteBinaryTree() {
 		super();
 		root = null;
 		q = new LinkedList<>();
