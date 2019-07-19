@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="referrer" content="origin-when-cross-origin">
+<meta name="description" content="2019 Summer coding - Todo List">
+<meta property="og:title" content="Todo List (YH Park)">
+<meta property="og:site_name" content="Todo List">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:description" content="2019 Summer coding - Todo List">
+<meta name="twitter:title" property="og:title" itemprop="title name" content="Todo List (YH Park)">
+<meta name="twitter:description" property="og:description" itemprop="description" content="2019 Summer coding - Todo List">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Todo List (YH Park)</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script type="text/javascript" src="//code.jquery.com/jquery-latest.min.js"></script>
+<script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<style type="text/css">
+	.container {
+		height: 100vh;
+	}
+	#to-do-list {
+		max-height: calc(100vh - 90px);
+		overflow-y: auto;
+		cursor: pointer;
+	}
+	#to-do-list .list-group-item {
+		padding: 20px 20px 30px;
+		transition: background 0.3s ease 0s;
+		transition: opacity 0.5s ease 0s;
+		border-radius: 30px;
+	}
+	#to-do-list .list-group-item:hover {
+		background: #d5f5ff;
+	}
+	.list-date-text {
+		color: #aaa;
+		display: inline-block; 
+		position: absolute;
+	}
+	.to-do-list-content {
+		font-size: 1.3em;
+		cursor: pointer;
+	}
+	#list-up-btn, #list-down-btn {
+		border-radius: 50%; 
+		float: right; 
+		margin-top: -13px;
+	}
+	#add-todo-content {
+		resize: none;
+		border: none;
+		width: 100%;
+		height: 30vh;
+	}
+	#view-todo-content {
+		height: 30vh;
+	}
+	.checklist input[type=text] {
+		border: none;
+		width: 80%;
+	}
+</style>
+<script type="text/javascript">
+	$(document).ready(function() {
+		fnObj.addDummyListElement();
+	})
+	var fnObj = {
+			addNewListElement: function(dateStr, listContent) {
+				var $li = $('<li class="list-group-item" style="overflow: hidden; opacity: 0;" onclick="fnObj.viewTodo.openModal(this)"></li>');
+				var $div = $('<div style="margin-top: -100%; transition: margin 0.7s ease 0s;"></div>');
+				var $dateSpan = $('<span class="list-date-text">'+dateStr+'</span>');
+				$div.append($dateSpan);
+				$div.append('<br>');
+				var $contentSpan = $('<span class="to-do-list-content">'+listContent+'</span>');
+				$div.append($contentSpan);
+				$li.append($div);
+				$('#to-do-list').append($li);
+				setTimeout(function() {
+					$li.css('opacity', '1');
+					setTimeout(function() {
+						$div.css('margin-top', '0');
+					}, 100);
+				}, 100);
+				
+			},
+			addDummyListElement: function() {
+				this.addNewListElement('2019년 5월 19일 12:00:00', 'To do');
+			},
+			checkList : {
+				curListCnt: 0,
+				addNewCheckList: function() {
+					if (this.curListCnt < 5) {
+						var $div = $('<div></div>');
+						$div.append('<input type="checkbox" disabled="disabled">&nbsp;&nbsp;<input type="text" placeholder="check list memo">');
+						$('#add-todo-modal .checklist').append($div);
+						this.curListCnt++;
+					}
+					else
+						alert('체크리스트는 5개까지 추가할 수 있습니다.');
+				}
+			},
+			addTodo: {
+				initModal: function() {
+					fnObj.checkList.curListCnt = 0;
+					$('.checklist').empty();
+					$('#add-todo-content').val('');
+				},
+				openModal: function() {
+					this.initModal();
+					$('#add-todo-modal').modal('show');
+				},
+				addRequest: function() {
+					fnObj.addDummyListElement();
+					var param = {};
+					param.memo = $('#add-todo-content').val();
+					var cnt = 1;
+					$('#add-todo-modal .checklist>div').each(function() {
+						if ($(this).find('input[type=text]').val() != '')
+							param['check'+cnt++] = $(this).find('input[type=text]').val();
+					});
+					$.post('/addTodo', param, function() {
+						alert('OK');
+					})
+				}
+			},
+			viewTodo: {
+				initModal: function() {
+					
+				},
+				openModal: function(target) {
+					this.initModal();
+					$('#view-todo-detail-modal').modal('show');
+					console.log(target);
+				},
+				deleteTodo: function() {
+					
+				}
+			}
+			
+	}
+</script>
+</head>
+<body>
+<div class="container" style="background: #ff00f1;">
+	<h1 style="text-align: center; color: #fff;">
+		To-do List
+		<button id="add-list-btn" class="btn btn-info btn-small" style="border-radius: 50%; float: right;" onclick="fnObj.addTodo.openModal();">+</button>
+	</h1>
+	<ul id="to-do-list" class="list-group"></ul>
+</div>
+<div id="add-todo-modal" class="modal fade" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+				<h3 id="modalTitle" style="text-align: center;">Add new To-do</h3>
+			</div>
+			<div class="modal-body">
+				<textarea id="add-todo-content" placeholder="memo"></textarea>
+				<br>
+				<div class="checklist" style="padding: 20px;"></div>
+				<span style="font-weight: bold; cursor: pointer;" onclick="fnObj.checkList.addNewCheckList()">→ Add check list element.</span>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-info btn-small" data-dismiss="modal" onclick="fnObj.addTodo.addRequest();">Save</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div id="view-todo-detail-modal" class="modal fade" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+				<h3 id="modalTitle" style="text-align: center;">To-do detail</h3>
+			</div>
+			<div class="modal-body">
+				<div id="view-todo-content"></div>
+				<br>
+				<div class="checklist" style="padding: 20px;"></div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-info btn-small" data-dismiss="modal" onclick="alert('mod');">Modify</button>
+				<button type="button" class="btn btn-danger btn-small" data-dismiss="modal" onclick="alert('del');">Delete</button>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>
